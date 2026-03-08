@@ -12,8 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, BarChart3, Camera, ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getCommodityNames } from "@/data/marketData";
 
-const POPULAR_CROPS = ["Rice", "Wheat", "Tomato", "Onion", "Potato", "Cotton", "Maize", "Soyabean", "Gram", "Mustard"];
+const COMMODITY_NAMES = getCommodityNames();
 
 const Index = () => {
   const [selectedCrop, setSelectedCrop] = useState("");
@@ -46,7 +47,7 @@ const Index = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Search className="h-5 w-5 text-primary" />
-                  Live Crop Price Search
+                  Crop Price Search
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -65,7 +66,7 @@ const Index = () => {
           <TabsContent value="compare">
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
-                {POPULAR_CROPS.map((crop) => (
+                {COMMODITY_NAMES.slice(0, 10).map((crop) => (
                   <Badge
                     key={crop}
                     variant={selectedCrop === crop ? "default" : "secondary"}
@@ -82,7 +83,7 @@ const Index = () => {
 
           <TabsContent value="trends" className="space-y-6">
             <div className="flex flex-wrap gap-2 mb-2">
-              {POPULAR_CROPS.map((crop) => (
+              {COMMODITY_NAMES.slice(0, 10).map((crop) => (
                 <Badge
                   key={crop}
                   variant={selectedCrop === crop ? "default" : "secondary"}
@@ -116,7 +117,7 @@ const Index = () => {
 
       <footer className="border-t border-border bg-card mt-8">
         <div className="container mx-auto px-4 py-4 text-center text-sm text-muted-foreground">
-          FarmPrice AI © 2026 — Live data from AGMARKNET / data.gov.in
+          FarmPrice AI © 2026 — Data from AGMARKNET Marketwise Report
         </div>
       </footer>
     </div>
