@@ -111,10 +111,6 @@ const Index = () => {
             </div>
           </TabsContent>
 
-          {/* Admin Tab */}
-          <TabsContent value="admin">
-            <AdminPanel />
-          </TabsContent>
         </Tabs>
       </main>
 
