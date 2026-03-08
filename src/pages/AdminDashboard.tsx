@@ -273,34 +273,113 @@ function PricesManager() {
 
 function UsersManager() {
   const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const load = async () => {
-    const { data } = await supabase.from("profiles").select("*, user_roles(role)").order("created_at", { ascending: false });
-    if (data) setUsers(data);
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("admin-users", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+        body: undefined,
+      });
+      // Edge function GET with query params isn't directly supported via invoke,
+      // so we use POST-style invoke with action in the body instead — let's fix:
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=list`,
+        { headers: { Authorization: `Bearer ${session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
+      );
+      const data = await resp.json();
+      if (Array.isArray(data)) setUsers(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
 
+  const promote = async (userId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=promote`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId }),
+    });
+    toast({ title: "User promoted to admin" });
+    load();
+  };
+
+  const remove = async (userId: string) => {
+    if (userId === user?.id) { toast({ title: "Cannot delete yourself", variant: "destructive" }); return; }
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=delete`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId }),
+    });
+    toast({ title: "User deleted" });
+    load();
+  };
+
   return (
     <Card className="border-border">
-      <CardHeader><CardTitle className="text-base">Registered Farmers</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-base">Registered Users</CardTitle></CardHeader>
       <CardContent>
-        <div className="rounded-lg border border-border overflow-auto max-h-[400px]">
-          <table className="w-full text-sm">
-            <thead><tr className="bg-secondary"><th className="text-left p-2">Name</th><th className="text-left p-2">Phone</th><th className="text-left p-2">State</th><th className="text-left p-2">Language</th><th className="text-left p-2">Role</th></tr></thead>
-            <tbody>
-              {users.map(u => (
-                <tr key={u.id} className="border-t border-border">
-                  <td className="p-2">{u.name}</td>
-                  <td className="p-2 text-muted-foreground">{u.phone || "—"}</td>
-                  <td className="p-2 text-muted-foreground">{u.state || "—"}</td>
-                  <td className="p-2 text-muted-foreground">{u.language}</td>
-                  <td className="p-2">{(u.user_roles as any[])?.[0]?.role || "farmer"}</td>
+        {loading ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">Loading users…</p>
+        ) : users.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-8 text-center">No farmers registered yet.</p>
+        ) : (
+          <div className="rounded-lg border border-border overflow-auto max-h-[500px]">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-secondary">
+                  <th className="text-left p-2">Name</th>
+                  <th className="text-left p-2">Email</th>
+                  <th className="text-left p-2">Phone</th>
+                  <th className="text-left p-2">State</th>
+                  <th className="text-left p-2">Language</th>
+                  <th className="text-left p-2">Role</th>
+                  <th className="text-left p-2">Created</th>
+                  <th className="text-center p-2 w-40">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u.id} className="border-t border-border">
+                    <td className="p-2 font-medium">{u.name || "—"}</td>
+                    <td className="p-2 text-muted-foreground">{u.email}</td>
+                    <td className="p-2 text-muted-foreground">{u.phone || "—"}</td>
+                    <td className="p-2 text-muted-foreground">{u.state || "—"}</td>
+                    <td className="p-2 text-muted-foreground">{u.language}</td>
+                    <td className="p-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === "admin" ? "bg-primary/10 text-primary" : "bg-accent text-accent-foreground"}`}>
+                        {u.role}
+                      </span>
+                    </td>
+                    <td className="p-2 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td className="p-2 text-center space-x-1">
+                      {u.role !== "admin" && (
+                        <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => promote(u.id)}>
+                          Promote
+                        </Button>
+                      )}
+                      {u.id !== user?.id && (
+                        <Button size="sm" variant="ghost" className="h-7" onClick={() => remove(u.id)}>
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
