@@ -1,23 +1,19 @@
 import { useState } from "react";
-import { Search, Filter, Loader2 } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useCropPrices, useFilteredPrices } from "@/hooks/useMarketData";
+import { useCropPrices } from "@/hooks/useMarketData";
+import { getCommodityNames, getCommodityGroups } from "@/data/marketData";
 import type { MarketRecord } from "@/services/agriApi";
 
-const POPULAR_CROPS = ["Rice", "Wheat", "Tomato", "Onion", "Potato", "Cotton", "Maize", "Soyabean", "Gram", "Mustard"];
+const COMMODITY_NAMES = getCommodityNames();
+const GROUPS = getCommodityGroups();
 
 export function CropSearch({ onCropSelect }: { onCropSelect: (crop: string) => void }) {
   const [query, setQuery] = useState("");
   const [selectedCrop, setSelectedCrop] = useState("");
-  const [stateFilter, setStateFilter] = useState("");
-  const [districtFilter, setDistrictFilter] = useState("");
 
-  const { data, isLoading, isError, error } = useFilteredPrices({
-    commodity: selectedCrop || (query.length >= 2 ? query : undefined),
-    state: stateFilter || undefined,
-    district: districtFilter || undefined,
-  });
+  const { data, isLoading, isError } = useCropPrices(selectedCrop || (query.length >= 2 ? query : ""));
 
   const records = data?.records || [];
 
@@ -29,9 +25,7 @@ export function CropSearch({ onCropSelect }: { onCropSelect: (crop: string) => v
 
   const handleSearch = (value: string) => {
     setQuery(value);
-    if (value.length === 0) {
-      setSelectedCrop("");
-    }
+    if (value.length === 0) setSelectedCrop("");
   };
 
   const handleSearchSubmit = () => {
@@ -46,7 +40,7 @@ export function CropSearch({ onCropSelect }: { onCropSelect: (crop: string) => v
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
-          placeholder="Search crops... (e.g., Rice, Tomato, Wheat)"
+          placeholder="Search crops... (e.g., Wheat, Tomato, Cotton)"
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
@@ -54,25 +48,8 @@ export function CropSearch({ onCropSelect }: { onCropSelect: (crop: string) => v
         />
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="State"
-          value={stateFilter}
-          onChange={(e) => setStateFilter(e.target.value)}
-          className="w-40 h-9 text-sm"
-        />
-        <Input
-          placeholder="District"
-          value={districtFilter}
-          onChange={(e) => setDistrictFilter(e.target.value)}
-          className="w-40 h-9 text-sm"
-        />
-      </div>
-
       <div className="flex flex-wrap gap-2">
-        {POPULAR_CROPS.map((crop) => (
+        {COMMODITY_NAMES.map((crop) => (
           <Badge
             key={crop}
             variant={selectedCrop === crop ? "default" : "secondary"}
@@ -86,14 +63,13 @@ export function CropSearch({ onCropSelect }: { onCropSelect: (crop: string) => v
 
       {isLoading && (
         <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Fetching live market data...</span>
+          <Loader2 className="h-5 w-5 animate-spin" /> Loading market data...
         </div>
       )}
 
       {isError && (
         <div className="text-center py-6 text-destructive text-sm">
-          {(error as Error)?.message || "Failed to fetch market data. Please try again."}
+          Failed to load market data. Please try again.
         </div>
       )}
 
@@ -106,19 +82,19 @@ export function CropSearch({ onCropSelect }: { onCropSelect: (crop: string) => v
       {records.length > 0 && (
         <div className="rounded-lg border border-border overflow-hidden">
           <div className="text-xs text-muted-foreground px-3 py-1.5 bg-secondary/50">
-            {data?.total || records.length} results from live AGMARKNET data
+            {data?.total} results from AGMARKNET report (06-03-2026)
           </div>
           <div className="overflow-auto max-h-[400px]">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-secondary sticky top-0">
-                  <th className="text-left p-3 font-semibold text-secondary-foreground">Crop</th>
-                  <th className="text-left p-3 font-semibold text-secondary-foreground">Market</th>
-                  <th className="text-left p-3 font-semibold text-secondary-foreground">District</th>
-                  <th className="text-left p-3 font-semibold text-secondary-foreground">State</th>
+                  <th className="text-left p-3 font-semibold text-secondary-foreground">Commodity</th>
+                  <th className="text-left p-3 font-semibold text-secondary-foreground">Group</th>
+                  <th className="text-right p-3 font-semibold text-secondary-foreground">MSP ₹</th>
                   <th className="text-right p-3 font-semibold text-secondary-foreground">Min ₹</th>
                   <th className="text-right p-3 font-semibold text-secondary-foreground">Max ₹</th>
                   <th className="text-right p-3 font-semibold text-secondary-foreground">Modal ₹</th>
+                  <th className="text-right p-3 font-semibold text-secondary-foreground">Arrival (MT)</th>
                   <th className="text-right p-3 font-semibold text-secondary-foreground">Date</th>
                 </tr>
               </thead>
@@ -126,12 +102,12 @@ export function CropSearch({ onCropSelect }: { onCropSelect: (crop: string) => v
                 {records.map((r: MarketRecord, i: number) => (
                   <tr key={i} className="border-t border-border hover:bg-secondary/50 transition-colors">
                     <td className="p-3 font-medium">{r.commodity}</td>
-                    <td className="p-3">{r.market}</td>
-                    <td className="p-3 text-muted-foreground">{r.district}</td>
-                    <td className="p-3 text-muted-foreground">{r.state}</td>
-                    <td className="p-3 text-right">₹{r.min_price}</td>
-                    <td className="p-3 text-right font-semibold text-primary">₹{r.max_price}</td>
-                    <td className="p-3 text-right">₹{r.modal_price}</td>
+                    <td className="p-3 text-muted-foreground">{r.commodity_group}</td>
+                    <td className="p-3 text-right">{r.msp ? `₹${r.msp}` : "—"}</td>
+                    <td className="p-3 text-right">₹{r.min_price.toFixed(2)}</td>
+                    <td className="p-3 text-right font-semibold text-primary">₹{r.max_price.toFixed(2)}</td>
+                    <td className="p-3 text-right">₹{r.modal_price.toFixed(2)}</td>
+                    <td className="p-3 text-right">{r.arrival_tonnes.toFixed(2)}</td>
                     <td className="p-3 text-right text-muted-foreground">{r.arrival_date}</td>
                   </tr>
                 ))}

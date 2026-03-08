@@ -1,6 +1,7 @@
 import { Brain, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCropPrices } from "@/hooks/useMarketData";
+import { getCommodityData } from "@/data/marketData";
 
 export function PricePrediction({ crop }: { crop: string }) {
   const { data, isLoading } = useCropPrices(crop);
@@ -25,8 +26,8 @@ export function PricePrediction({ crop }: { crop: string }) {
     );
   }
 
-  const records = data?.records || [];
-  if (records.length === 0) {
+  const commodityData = getCommodityData(crop);
+  if (!commodityData) {
     return (
       <Card className="border-border">
         <CardContent className="py-8 text-center text-muted-foreground">
@@ -36,11 +37,13 @@ export function PricePrediction({ crop }: { crop: string }) {
     );
   }
 
-  const avgModal = Math.round(records.reduce((s, r) => s + r.modal_price, 0) / records.length);
-  const minPrice = Math.min(...records.map((r) => r.min_price));
-  const maxPrice = Math.max(...records.map((r) => r.max_price));
-  const priceSpread = maxPrice - minPrice;
-  const spreadPct = ((priceSpread / avgModal) * 100).toFixed(1);
+  const prices = commodityData.prices;
+  const arrivals = commodityData.arrivals;
+  const latest = prices[0];
+  const prev = prices[1];
+  const dayChange = latest.price - prev.price;
+  const dayChangePct = ((dayChange / prev.price) * 100);
+  const msp = commodityData.msp;
 
   return (
     <Card className="border-border">
@@ -52,35 +55,37 @@ export function PricePrediction({ crop }: { crop: string }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-center p-3 rounded-lg bg-secondary">
-          <p className="text-sm text-muted-foreground">Average Modal Price</p>
-          <p className="text-3xl font-bold">₹{avgModal}</p>
-          <p className="text-xs text-muted-foreground">per quintal ({records.length} markets)</p>
+          <p className="text-sm text-muted-foreground">Latest Price ({latest.date})</p>
+          <p className="text-3xl font-bold">₹{latest.price.toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">per quintal</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 rounded-lg bg-secondary text-center">
-            <p className="text-xs text-muted-foreground mb-1">Lowest Price</p>
-            <p className="text-xl font-bold">₹{minPrice}</p>
-            <div className="flex items-center justify-center gap-1 text-sm font-medium text-destructive">
-              <ArrowDownRight className="h-4 w-4" />
-              Min across markets
+            <p className="text-xs text-muted-foreground mb-1">Day Change</p>
+            <div className={`flex items-center justify-center gap-1 text-lg font-bold ${dayChange >= 0 ? "text-primary" : "text-destructive"}`}>
+              {dayChange >= 0 ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
+              ₹{Math.abs(dayChange).toFixed(2)}
             </div>
+            <p className={`text-sm font-medium ${dayChange >= 0 ? "text-primary" : "text-destructive"}`}>
+              {dayChangePct >= 0 ? "+" : ""}{dayChangePct.toFixed(1)}%
+            </p>
           </div>
           <div className="p-3 rounded-lg bg-secondary text-center">
-            <p className="text-xs text-muted-foreground mb-1">Highest Price</p>
-            <p className="text-xl font-bold">₹{maxPrice}</p>
-            <div className="flex items-center justify-center gap-1 text-sm font-medium text-primary">
-              <ArrowUpRight className="h-4 w-4" />
-              Max across markets
-            </div>
+            <p className="text-xs text-muted-foreground mb-1">Arrival Today</p>
+            <p className="text-lg font-bold">{arrivals[0].tonnes.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground">Metric Tonnes</p>
           </div>
         </div>
-        <div className="text-center p-2 rounded-lg bg-accent/10">
-          <p className="text-sm">
-            Price spread: <span className="font-bold">₹{priceSpread}</span> ({spreadPct}% variation)
-          </p>
-        </div>
+        {msp && (
+          <div className={`text-center p-2 rounded-lg ${latest.price >= msp ? "bg-primary/10" : "bg-destructive/10"}`}>
+            <p className="text-sm">
+              MSP: <span className="font-bold">₹{msp}</span> — Price is{" "}
+              <span className="font-bold">{latest.price >= msp ? "above" : "below"}</span> MSP by ₹{Math.abs(latest.price - msp).toFixed(2)}
+            </p>
+          </div>
+        )}
         <p className="text-xs text-muted-foreground text-center">
-          * Based on live AGMARKNET market data
+          * Data from AGMARKNET Marketwise Report
         </p>
       </CardContent>
     </Card>
