@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
-import { Mic, MicOff, Loader2 } from "lucide-react";
+import { Mic, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cropNames, cropPrices } from "@/data/cropData";
 import { toast } from "@/hooks/use-toast";
 
 interface VoiceSearchProps {
@@ -28,17 +27,11 @@ export function VoiceSearch({ onCropSelect }: VoiceSearchProps) {
     recognition.onend = () => setIsListening(false);
 
     recognition.onresult = (event: any) => {
-      const spoken = event.results[0][0].transcript.toLowerCase();
+      const spoken = event.results[0][0].transcript.trim();
       setTranscript(spoken);
-
-      // Try to match a crop name
-      const matchedCrop = cropNames.find(c => spoken.includes(c.toLowerCase()));
-      if (matchedCrop) {
-        onCropSelect(matchedCrop);
-        toast({ title: `Found: ${matchedCrop}`, description: `Showing prices for ${matchedCrop}` });
-      } else {
-        toast({ title: "Crop not found", description: `Heard: "${spoken}". Try saying a crop name like Rice, Tomato, Wheat.`, variant: "destructive" });
-      }
+      // Pass the spoken text directly as a commodity search
+      onCropSelect(spoken);
+      toast({ title: `Searching: ${spoken}`, description: `Fetching live prices for "${spoken}"` });
     };
 
     recognition.onerror = (event: any) => {

@@ -37,12 +37,6 @@ async function callEdgeFunction(params: FetchParams): Promise<MarketResponse> {
   query.set("limit", String(params.limit || 50));
   query.set("offset", String(params.offset || 0));
 
-  const { data, error } = await supabase.functions.invoke("agri-market-data", {
-    body: null,
-    headers: {},
-  });
-
-  // supabase.functions.invoke doesn't support query params, use fetch directly
   const session = await supabase.auth.getSession();
   const token = session.data.session?.access_token;
 
@@ -76,23 +70,6 @@ export async function fetchStatePrices(state: string): Promise<MarketResponse> {
 
 export async function fetchFilteredPrices(params: FetchParams): Promise<MarketResponse> {
   return callEdgeFunction(params);
-}
-
-// Get unique values from records for filters
-export function getUniqueCommodities(records: MarketRecord[]): string[] {
-  return [...new Set(records.map((r) => r.commodity))].sort();
-}
-
-export function getUniqueStates(records: MarketRecord[]): string[] {
-  return [...new Set(records.map((r) => r.state))].sort();
-}
-
-export function getUniqueMarkets(records: MarketRecord[]): string[] {
-  return [...new Set(records.map((r) => r.market))].sort();
-}
-
-export function getUniqueDistricts(records: MarketRecord[]): string[] {
-  return [...new Set(records.map((r) => r.district))].sort();
 }
 
 export function getBestMarketFromRecords(records: MarketRecord[]): MarketRecord | null {

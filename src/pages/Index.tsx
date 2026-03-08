@@ -11,6 +11,9 @@ import { MarketComparison } from "@/components/MarketComparison";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, BarChart3, Camera, ArrowUpDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+const POPULAR_CROPS = ["Rice", "Wheat", "Tomato", "Onion", "Potato", "Cotton", "Maize", "Soyabean", "Gram", "Mustard"];
 
 const Index = () => {
   const [selectedCrop, setSelectedCrop] = useState("");
@@ -34,17 +37,16 @@ const Index = () => {
               <ArrowUpDown className="h-4 w-4" /> Compare
             </TabsTrigger>
             <TabsTrigger value="trends" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <BarChart3 className="h-4 w-4" /> Trends & AI
+              <BarChart3 className="h-4 w-4" /> Trends & Insights
             </TabsTrigger>
           </TabsList>
 
-          {/* Price Search Tab */}
           <TabsContent value="search" className="space-y-4">
             <Card className="border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Search className="h-5 w-5 text-primary" />
-                  Crop Price Search
+                  Live Crop Price Search
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -55,41 +57,40 @@ const Index = () => {
             <BestMarketCard crop={selectedCrop} />
           </TabsContent>
 
-          {/* Image Detection Tab */}
           <TabsContent value="detect" className="space-y-4">
             <CropImageDetector onCropDetected={setSelectedCrop} />
             {selectedCrop && <BestMarketCard crop={selectedCrop} />}
           </TabsContent>
 
-          {/* Market Comparison Tab */}
           <TabsContent value="compare">
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
-                {["Rice", "Tomato", "Onion", "Wheat", "Cotton", "Maize", "Potato"].map((crop) => (
-                  <button
+                {POPULAR_CROPS.map((crop) => (
+                  <Badge
                     key={crop}
+                    variant={selectedCrop === crop ? "default" : "secondary"}
+                    className="cursor-pointer text-sm px-3 py-1.5 transition-all hover:scale-105"
                     onClick={() => setSelectedCrop(crop)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${selectedCrop === crop ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
                   >
                     {crop}
-                  </button>
+                  </Badge>
                 ))}
               </div>
               <MarketComparison crop={selectedCrop} />
             </div>
           </TabsContent>
 
-          {/* Trends & AI Tab */}
           <TabsContent value="trends" className="space-y-6">
             <div className="flex flex-wrap gap-2 mb-2">
-              {["Rice", "Tomato", "Onion", "Wheat", "Cotton", "Maize", "Potato"].map((crop) => (
-                <button
+              {POPULAR_CROPS.map((crop) => (
+                <Badge
                   key={crop}
+                  variant={selectedCrop === crop ? "default" : "secondary"}
+                  className="cursor-pointer text-sm px-3 py-1.5 transition-all hover:scale-105"
                   onClick={() => setSelectedCrop(crop)}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${selectedCrop === crop ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
                 >
                   {crop}
-                </button>
+                </Badge>
               ))}
             </div>
             <div className="grid lg:grid-cols-2 gap-6">
@@ -110,13 +111,12 @@ const Index = () => {
               </div>
             </div>
           </TabsContent>
-
         </Tabs>
       </main>
 
       <footer className="border-t border-border bg-card mt-8">
         <div className="container mx-auto px-4 py-4 text-center text-sm text-muted-foreground">
-          FarmPrice AI © 2026 — Empowering farmers with data-driven decisions
+          FarmPrice AI © 2026 — Live data from AGMARKNET / data.gov.in
         </div>
       </footer>
     </div>
