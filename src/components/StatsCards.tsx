@@ -1,15 +1,38 @@
-import { BarChart3, MapPin, Wheat, TrendingUp } from "lucide-react";
-import { cropPrices, cropNames } from "@/data/cropData";
+import { BarChart3, MapPin, Wheat, TrendingUp, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
-const stats = [
-  { label: "Crops Tracked", value: cropNames.length, icon: Wheat, color: "text-primary" },
-  { label: "Markets", value: new Set(cropPrices.map(c => c.market)).size, icon: MapPin, color: "text-accent" },
-  { label: "States", value: new Set(cropPrices.map(c => c.state)).size, icon: BarChart3, color: "text-success" },
-  { label: "Price Updates", value: cropPrices.length, icon: TrendingUp, color: "text-warning" },
-];
+import { useAllPrices } from "@/hooks/useMarketData";
 
 export function StatsCards() {
+  const { data, isLoading } = useAllPrices();
+  const records = data?.records || [];
+
+  const stats = [
+    {
+      label: "Commodities",
+      value: isLoading ? "…" : new Set(records.map((r) => r.commodity)).size,
+      icon: Wheat,
+      color: "text-primary",
+    },
+    {
+      label: "Markets",
+      value: isLoading ? "…" : new Set(records.map((r) => r.market)).size,
+      icon: MapPin,
+      color: "text-accent",
+    },
+    {
+      label: "States",
+      value: isLoading ? "…" : new Set(records.map((r) => r.state)).size,
+      icon: BarChart3,
+      color: "text-primary",
+    },
+    {
+      label: "Price Records",
+      value: isLoading ? "…" : data?.total || records.length,
+      icon: TrendingUp,
+      color: "text-accent",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {stats.map((s) => (

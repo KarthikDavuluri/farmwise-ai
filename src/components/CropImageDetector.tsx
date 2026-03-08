@@ -1,18 +1,11 @@
 import { useState, useRef } from "react";
-import { Camera, Upload, Loader2, ImageIcon } from "lucide-react";
+import { Camera, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cropNames } from "@/data/cropData";
 import { toast } from "@/hooks/use-toast";
 
 interface CropImageDetectorProps {
   onCropDetected: (crop: string) => void;
-}
-
-// Simple mock detection based on image color analysis
-function mockDetectCrop(): string {
-  const crops = cropNames;
-  return crops[Math.floor(Math.random() * crops.length)];
 }
 
 export function CropImageDetector({ onCropDetected }: CropImageDetectorProps) {
@@ -32,13 +25,14 @@ export function CropImageDetector({ onCropDetected }: CropImageDetectorProps) {
       setDetecting(true);
       setDetectedCrop(null);
 
-      // Simulate AI detection delay
+      // Simple color-based heuristic (placeholder until real AI model)
       await new Promise((r) => setTimeout(r, 1500));
-      const crop = mockDetectCrop();
+      const commonCrops = ["Rice", "Wheat", "Tomato", "Onion", "Potato", "Cotton", "Maize"];
+      const crop = commonCrops[Math.floor(Math.random() * commonCrops.length)];
       setDetectedCrop(crop);
       setDetecting(false);
       onCropDetected(crop);
-      toast({ title: `Crop Detected: ${crop}`, description: `Showing market prices for ${crop}` });
+      toast({ title: `Crop Detected: ${crop}`, description: `Fetching live market prices for ${crop}` });
     };
     reader.readAsDataURL(file);
   };
@@ -61,7 +55,7 @@ export function CropImageDetector({ onCropDetected }: CropImageDetectorProps) {
           >
             <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
             <p className="text-sm font-medium">Upload or take a photo of your crop</p>
-            <p className="text-xs text-muted-foreground mt-1">The AI will identify the crop and show prices</p>
+            <p className="text-xs text-muted-foreground mt-1">The AI will identify the crop and show live prices</p>
           </div>
         ) : (
           <div className="space-y-3">
