@@ -5,8 +5,13 @@ import { CropSearch } from "@/components/CropSearch";
 import { PriceTrendChart } from "@/components/PriceTrendChart";
 import { BestMarketCard } from "@/components/BestMarketCard";
 import { PricePrediction } from "@/components/PricePrediction";
+import { VoiceSearch } from "@/components/VoiceSearch";
+import { CropImageDetector } from "@/components/CropImageDetector";
+import { MarketComparison } from "@/components/MarketComparison";
+import { AdminPanel } from "@/components/AdminPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, BarChart3, Trophy, Brain } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, BarChart3, Settings, Camera, ArrowUpDown } from "lucide-react";
 
 const Index = () => {
   const [selectedCrop, setSelectedCrop] = useState("");
@@ -18,38 +23,103 @@ const Index = () => {
       <main className="container mx-auto px-4 py-6 space-y-6">
         <StatsCards />
 
-        {/* Crop Search */}
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5 text-primary" />
-              Crop Price Search
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CropSearch onCropSelect={setSelectedCrop} />
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="search" className="space-y-4">
+          <TabsList className="flex flex-wrap h-auto gap-1 bg-secondary p-1">
+            <TabsTrigger value="search" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Search className="h-4 w-4" /> Price Search
+            </TabsTrigger>
+            <TabsTrigger value="detect" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Camera className="h-4 w-4" /> Image Detect
+            </TabsTrigger>
+            <TabsTrigger value="compare" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ArrowUpDown className="h-4 w-4" /> Compare
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <BarChart3 className="h-4 w-4" /> Trends & AI
+            </TabsTrigger>
+            <TabsTrigger value="admin" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Settings className="h-4 w-4" /> Admin
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Charts + Recommendations */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-accent" />
-                Price Trends
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PriceTrendChart crop={selectedCrop} />
-            </CardContent>
-          </Card>
-
-          <div className="space-y-6">
+          {/* Price Search Tab */}
+          <TabsContent value="search" className="space-y-4">
+            <Card className="border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5 text-primary" />
+                  Crop Price Search
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <VoiceSearch onCropSelect={setSelectedCrop} />
+                <CropSearch onCropSelect={setSelectedCrop} />
+              </CardContent>
+            </Card>
             <BestMarketCard crop={selectedCrop} />
-            <PricePrediction crop={selectedCrop} />
-          </div>
-        </div>
+          </TabsContent>
+
+          {/* Image Detection Tab */}
+          <TabsContent value="detect" className="space-y-4">
+            <CropImageDetector onCropDetected={setSelectedCrop} />
+            {selectedCrop && <BestMarketCard crop={selectedCrop} />}
+          </TabsContent>
+
+          {/* Market Comparison Tab */}
+          <TabsContent value="compare">
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {["Rice", "Tomato", "Onion", "Wheat", "Cotton", "Maize", "Potato"].map((crop) => (
+                  <button
+                    key={crop}
+                    onClick={() => setSelectedCrop(crop)}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${selectedCrop === crop ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
+                  >
+                    {crop}
+                  </button>
+                ))}
+              </div>
+              <MarketComparison crop={selectedCrop} />
+            </div>
+          </TabsContent>
+
+          {/* Trends & AI Tab */}
+          <TabsContent value="trends" className="space-y-6">
+            <div className="flex flex-wrap gap-2 mb-2">
+              {["Rice", "Tomato", "Onion", "Wheat", "Cotton", "Maize", "Potato"].map((crop) => (
+                <button
+                  key={crop}
+                  onClick={() => setSelectedCrop(crop)}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${selectedCrop === crop ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"}`}
+                >
+                  {crop}
+                </button>
+              ))}
+            </div>
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-accent" />
+                    Price Trends
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PriceTrendChart crop={selectedCrop} />
+                </CardContent>
+              </Card>
+              <div className="space-y-6">
+                <BestMarketCard crop={selectedCrop} />
+                <PricePrediction crop={selectedCrop} />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Admin Tab */}
+          <TabsContent value="admin">
+            <AdminPanel />
+          </TabsContent>
+        </Tabs>
       </main>
 
       <footer className="border-t border-border bg-card mt-8">
