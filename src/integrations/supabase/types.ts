@@ -14,16 +14,165 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      crops: {
+        Row: {
+          created_at: string
+          crop_name: string
+          id: string
+          image: string | null
+        }
+        Insert: {
+          created_at?: string
+          crop_name: string
+          id?: string
+          image?: string | null
+        }
+        Update: {
+          created_at?: string
+          crop_name?: string
+          id?: string
+          image?: string | null
+        }
+        Relationships: []
+      }
+      markets: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          market_name: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          market_name: string
+          state: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          market_name?: string
+          state?: string
+        }
+        Relationships: []
+      }
+      prices: {
+        Row: {
+          avg_price: number
+          created_at: string
+          crop_id: string
+          date: string
+          id: string
+          market_id: string
+          max_price: number
+          min_price: number
+        }
+        Insert: {
+          avg_price?: number
+          created_at?: string
+          crop_id: string
+          date?: string
+          id?: string
+          market_id: string
+          max_price?: number
+          min_price?: number
+        }
+        Update: {
+          avg_price?: number
+          created_at?: string
+          crop_id?: string
+          date?: string
+          id?: string
+          market_id?: string
+          max_price?: number
+          min_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prices_crop_id_fkey"
+            columns: ["crop_id"]
+            isOneToOne: false
+            referencedRelation: "crops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prices_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "markets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          language: string | null
+          name: string
+          phone: string | null
+          state: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language?: string | null
+          name: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string | null
+          name?: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "farmer" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +299,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["farmer", "admin"],
+    },
   },
 } as const
