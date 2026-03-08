@@ -280,13 +280,6 @@ function UsersManager() {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const res = await supabase.functions.invoke("admin-users", {
-        method: "GET",
-        headers: { Authorization: `Bearer ${session?.access_token}` },
-        body: undefined,
-      });
-      // Edge function GET with query params isn't directly supported via invoke,
-      // so we use POST-style invoke with action in the body instead — let's fix:
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=list`,
         { headers: { Authorization: `Bearer ${session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
