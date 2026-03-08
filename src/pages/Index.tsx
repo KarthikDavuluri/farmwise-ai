@@ -36,9 +36,6 @@ const Index = () => {
             <TabsTrigger value="trends" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <BarChart3 className="h-4 w-4" /> Trends & AI
             </TabsTrigger>
-            <TabsTrigger value="admin" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Settings className="h-4 w-4" /> Admin
-            </TabsTrigger>
           </TabsList>
 
           {/* Price Search Tab */}
