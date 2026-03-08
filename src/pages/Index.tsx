@@ -8,10 +8,9 @@ import { PricePrediction } from "@/components/PricePrediction";
 import { VoiceSearch } from "@/components/VoiceSearch";
 import { CropImageDetector } from "@/components/CropImageDetector";
 import { MarketComparison } from "@/components/MarketComparison";
-import { AdminPanel } from "@/components/AdminPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, BarChart3, Settings, Camera, ArrowUpDown } from "lucide-react";
+import { Search, BarChart3, Camera, ArrowUpDown } from "lucide-react";
 
 const Index = () => {
   const [selectedCrop, setSelectedCrop] = useState("");
@@ -36,9 +35,6 @@ const Index = () => {
             </TabsTrigger>
             <TabsTrigger value="trends" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <BarChart3 className="h-4 w-4" /> Trends & AI
-            </TabsTrigger>
-            <TabsTrigger value="admin" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Settings className="h-4 w-4" /> Admin
             </TabsTrigger>
           </TabsList>
 
@@ -115,10 +111,6 @@ const Index = () => {
             </div>
           </TabsContent>
 
-          {/* Admin Tab */}
-          <TabsContent value="admin">
-            <AdminPanel />
-          </TabsContent>
         </Tabs>
       </main>
 
