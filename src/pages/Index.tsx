@@ -8,10 +8,9 @@ import { PricePrediction } from "@/components/PricePrediction";
 import { VoiceSearch } from "@/components/VoiceSearch";
 import { CropImageDetector } from "@/components/CropImageDetector";
 import { MarketComparison } from "@/components/MarketComparison";
-import { AdminPanel } from "@/components/AdminPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, BarChart3, Settings, Camera, ArrowUpDown } from "lucide-react";
+import { Search, BarChart3, Camera, ArrowUpDown } from "lucide-react";
 
 const Index = () => {
   const [selectedCrop, setSelectedCrop] = useState("");
